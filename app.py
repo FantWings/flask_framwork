@@ -1,11 +1,12 @@
 # from flask_cors import CORS
 from flask import Flask
-from config import FlaskConfig
+from config import FlaskConfig, DBConfig
 from utils.database import db
 from blueprints.bp_index import blueprint as index
 
 app = Flask(__name__)
 app.config.from_object(FlaskConfig)
+app.config.from_object(DBConfig)
 # CORS(app, supports_credentials=True)
 
 with app.app_context():

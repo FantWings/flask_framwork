@@ -1,7 +1,8 @@
 from random import Random, sample
+from hashlib import md5
 
 
-def genToken(length: int = 32):
+def gen_token(length: int = 32):
     """
     token生成(默认32位)
     """
@@ -13,7 +14,7 @@ def genToken(length: int = 32):
     return token
 
 
-def genRandomCode(lenguth: int = 6):
+def gen_random_code(lenguth: int = 6):
     """
     验证码生成(默认6位)
     """
@@ -29,10 +30,9 @@ def genRandomCode(lenguth: int = 6):
     return code_num
 
 
-def genMd5Password(password: str, salt: str = None):
+def gen_md5_password(password: str, salt: str = None):
     """
     MD5生成（支持加盐）
     """
-    from hashlib import md5
     salted_passowrd = f"{password}{salt}"
     return md5(salted_passowrd.encode("utf-8")).hexdigest()

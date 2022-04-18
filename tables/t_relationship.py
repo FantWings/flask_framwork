@@ -2,7 +2,8 @@ from utils.database import db
 from sqlalchemy.sql import func
 
 
-class t_email(db.Model):
+class Email(db.Model):
+    """邮箱表"""
     __tablename__ = "t_email"
     email = db.Column(db.String(32),
                       primary_key=True,

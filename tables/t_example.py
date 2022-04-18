@@ -1,12 +1,13 @@
-from utils.database import db
 from sqlalchemy.sql import func
+from utils.database import db
 
 # 外键表
 from t_relationship import t_email
 
 
-class t_tables(db.Model):
-    __tablename__ = "t_tables"
+class Users(db.Model):
+    """用户表"""
+    __tablename__ = "t_users"
     id = db.Column(db.Integer, primary_key=True, nullable=False, comment="索引")
     nickname = db.Column(db.String(16), nullable=False, comment="用户名")
     uuid = db.Column(db.String(64), nullable=False, comment="用户UUID")
