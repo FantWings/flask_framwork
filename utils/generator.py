@@ -1,7 +1,7 @@
 from random import Random, sample
 
 
-def genToken(length=32):
+def genToken(length: int = 32):
     """
     token生成(默认32位)
     """
@@ -13,7 +13,7 @@ def genToken(length=32):
     return token
 
 
-def genRandomCode(lenguth=6):
+def genRandomCode(lenguth: int = 6):
     """
     验证码生成(默认6位)
     """
@@ -29,7 +29,7 @@ def genRandomCode(lenguth=6):
     return code_num
 
 
-def genMd5Password(password, salt=None):
+def genMd5Password(password: str, salt: str = None):
     """
     MD5生成（支持加盐）
     """
