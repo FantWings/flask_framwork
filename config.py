@@ -26,13 +26,10 @@ class DBConfig(object):
 
     if getenv("SQL_ENGINE", "sqlite") == "mysql":
         # 使用MySQL数据库
-        SQLALCHEMY_DATABASE_URI = f"mysql://%s:%s@%s:%s/%s" % (
-            getenv("SQL_USER", "root"),
-            getenv("SQL_PASS", ""),
-            getenv("SQL_HOST", "127.0.0.1"),
-            getenv("SQL_PORT", "3306"),
-            getenv("SQL_BASE", "BaseName"),
-        )
+        SQLALCHEMY_DATABASE_URI = "mysql://{}:{}@{}:{}/{}".format(
+            getenv("SQL_USER", "root"), getenv("SQL_PASS", ""),
+            getenv("SQL_HOST", "127.0.0.1"), getenv("SQL_PORT", "3306"),
+            getenv("SQL_BASE", "BaseName"))
     else:
         # 使用SQLite数据库
         base_dir = path.abspath(path.dirname(__file__))
