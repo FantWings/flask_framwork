@@ -1,10 +1,13 @@
+from uuid import uuid1
 from flask import request, Blueprint
 from time import time
 
 from utils.response import json_response
 from utils.generator import gen_md5_password, gen_token
+from utils.database import session
 
-from tables.t_example import Users
+from tables.t_user import Users
+from tables.t_email import Email
 
 blueprint = Blueprint("index", __name__, url_prefix="/")
 
@@ -21,33 +24,64 @@ def index():
 def json():
     """json返回示例"""
     body = request.get_json()
-    return json_response(**body)
+    return json_response(data=body)
 
 
-@blueprint.route('/login_api_demo', methods=['POST'])
-def login_demo():
-    body = request.json()
-    result = userLogin(**body)
-    return json_response(**result)
+@blueprint.route('/add', methods=["POST"])
+def demo_sql_add():
+    body = request.get_json()
+    if body is None:
+        return json_response(msg="参数错误", status=1)
+
+    # 增加一个邮箱
+    EMAIL_ADD = Email(addr=body['email'])
+    session.add(EMAIL_ADD)
+    session.flush()
+
+    # 增加一个用户，并与其将邮箱进行关联
+    USER_ADD = Users(password=gen_md5_password(body['password']),
+                     nickname=body['nickname'],
+                     uuid=uuid1().hex,
+                     email_id=EMAIL_ADD.id)
+    session.add(USER_ADD)
+
+    # 提交数据库修改
+    session.commit()
+
+    return json_response(msg="用户创建成功")
 
 
-def userLogin(username, password):
-    if not username or not password:
-        # 因为没有入参，访问demo一定会返回“用户名和密码不可为空”的示例
-        return {"status": 1, "msg": "用户名和密码不可为空"}
-    query = (Users.query.with_entities(
-        Users.id, Users.password).filter_by(email_addr=username).first())
-    if query is None:
-        return {"status": 1, "msg": "用户名或密码错误"}
-    if gen_md5_password(password) != query.password:
-        return {"status": 1, "msg": "用户名或密码错误"}
+@blueprint.route('/query', methods=["GET"])
+def demo_sql_query():
+    nickname = request.args.get('nickname')
+    email = request.args.get('email')
+    if nickname:
+        QUERY_RESULT = Users.query.filter_by(nickname=nickname).first()
+        if QUERY_RESULT is None:
+            return json_response(msg="数据不存在", status=1)
+        return json_response({
+            'data': {
+                'nickname': QUERY_RESULT.nickname,
+                'password': QUERY_RESULT.password,
+                'email': QUERY_RESULT.bind_email.addr,
+                'token': gen_token(32),
+                "expTime": int(round(time() * 1000)) + 172800000
+            }
+        })
+    if email:
+        QUERY_RESULT = Email.query.filter_by(addr=email).first()
+        if QUERY_RESULT is None:
+            return json_response(msg="数据不存在", status=1)
 
-    token = gen_token(32)
-    # 为了能让demo跑起来，免得还要开个Redis，禁用这一行代码
-    # Redis.write("session/{}".format(token), query.id)
-    return {
-        "data": {
-            "token": token,
-            "expTime": int(round(time() * 1000)) + 172800000
-        }
-    }
+        data = list()
+        for users in QUERY_RESULT.owner:
+            data.append({
+                'nickname': users.nickname,
+                'password': users.password,
+                'email': QUERY_RESULT.addr,
+                'token': gen_token(32),
+                "expTime": int(round(time() * 1000)) + 172800000
+            })
+        return json_response(data)
+    else:
+        return json_response(msg="数据不存在", status=1)
